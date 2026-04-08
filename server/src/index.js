@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { toNodeHandler } from "better-auth/node";
+import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import cors from "cors";
 import { auth } from "./lib/auth.js";
 dotenv.config();
@@ -23,6 +23,11 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
+
+app.get('/device', (req, res) => {
+  const {user_code} = req.query;
+  res.redirect(`http://localhost:3000/device?user_code=${user_code}`);
+})
 
 app.get("/api/me", async (req, res) => {
   const session = await auth.api.getSession({
