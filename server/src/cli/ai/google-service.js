@@ -1,6 +1,7 @@
 import { config } from "../../config/google.config.js";
-import { streamText } from 'ai'
+import { convertToModelMessages, streamText } from 'ai'
 import chalk from "chalk";
+import { google } from "@ai-sdk/google";
 
 export class AIService {
     constructor() {
@@ -21,7 +22,7 @@ export class AIService {
      * @return {Promise<Object>}
     */
 
-    async sendMesage(messages, onChunk, tools = undefined, onToolCall = null) {
+    async sendMessage(messages, onChunk, tools = undefined, onToolCall = null) {
         try {
             const streamConfig = {
                 model: this.model,
@@ -60,7 +61,7 @@ export class AIService {
 
     async getMessage(message, tools=undefined) {
         let fullResponse = '';
-        await this.sendMesage(message, (chunk) => {
+        await this.sendMessage(message, (chunk) => {
             fullResponse += chunk;
         })
 
