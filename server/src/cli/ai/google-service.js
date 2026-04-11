@@ -29,7 +29,7 @@ export class AIService {
                 messages: messages
             }
 
-            if(tools && Object.keys(tools).length > 0) {
+            if (tools && Object.keys(tools).length > 0) {
                 streamConfig.tools = tools;
                 streamConfig.maxSteps = 5;
 
@@ -41,7 +41,7 @@ export class AIService {
 
 
             const result = streamText(streamConfig)
-            
+
             let fullResponse = '';
 
             for await (const textChunk of result.textStream) {
@@ -56,19 +56,19 @@ export class AIService {
             const toolCalls = [];
             const toolResults = [];
 
-            if(fullResult.steps && Array.isArray(fullResult.steps)) {
-                for(const step of fullResult.steps) {
-                    if(step.toolCalls && step.toolCalls.length > 0) {
-                        for(const toolCall of step.toolCalls) {
+            if (fullResult.steps && Array.isArray(fullResult.steps)) {
+                for (const step of fullResult.steps) {
+                    if (step.toolCalls && step.toolCalls.length > 0) {
+                        for (const toolCall of step.toolCalls) {
                             toolCalls.push(toolCall);
 
-                            if(onToolCall) {
+                            if (onToolCall) {
                                 onToolCall(toolCall);
                             }
                         }
                     }
 
-                    if(step.toolResults && step.toolResults.length > 0) {
+                    if (step.toolResults && step.toolResults.length > 0) {
                         toolResults.push(...step.toolResults);
                     }
                 }
@@ -94,12 +94,32 @@ export class AIService {
      * @returns {Promise<string>}
     */
 
-    async getMessage(message, tools=undefined) {
+    async getMessage(message, tools = undefined) {
         let fullResponse = '';
         const result = await this.sendMessage(message, (chunk) => {
             fullResponse += chunk;
         }, tools)
 
         return result.content;
+    }
+
+    /**
+ * @param {Object} schema - Zod Schema
+ * @param {string} prompt - Prompt for generation
+ * @returns {Promise<Object>} Parsed object matching the schema
+ *
+ */
+    async generateStructured(schema, prompt) {
+        try {
+            const result = await generateObject({
+                model: this.model,
+                schema: schema,
+                prompt: prompt
+            })
+            return result.object
+        } catch (error) {
+            console.error(chalk.red("AI Structured Generation Error:"), error.message);
+            throw error;
+        }
     }
 }
